@@ -47,7 +47,7 @@ class Trainer:
         sentences = []
         cats = []
         pols = []
-        with open(f'{self.root_path}/label.txt', 'r') as f:
+        with open(f'{self.root_path}/label.txt', 'r', encoding="utf8") as f:
             for idx, line in enumerate(f):
                 if idx % 2 == 1:
                     cat, pol = line.strip().split()
@@ -55,7 +55,7 @@ class Trainer:
                     pols.append(self.inv_polarity_dict[pol])
                 else:
                     sentences.append(line.strip())
-        encoded_dict = tokenizer(
+        encoded_dict = self.tokenizer(
             sentences,
             padding=True,
             return_tensors='pt',
@@ -142,7 +142,7 @@ class Trainer:
         test_cats = []
         test_pols = []
 
-        with open(f'{self.root_path}/test.txt', 'r') as f:
+        with open(f'{self.root_path}/test.txt', 'r', encoding="utf8") as f:
             for line in f:
                 _, cat, pol, sentence = line.strip().split('\t')
                 cat = int(cat)
