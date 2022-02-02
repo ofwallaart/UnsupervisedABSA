@@ -1,6 +1,6 @@
 config = {
     'domain': 'restaurant',
-    'device': 'cpu'
+    'device': 'cuda'
 }
 bert_mapper = {
     'laptop': 'activebus/BERT-DK_laptop',
@@ -89,7 +89,7 @@ M = {
 K_1 = 10
 K_2 = 30
 lambda_threshold = 0.5
-batch_size = 12
+batch_size = 8
 validation_data_size = 100
 learning_rate = 1e-5
-epochs = 10
+epochs = 2
