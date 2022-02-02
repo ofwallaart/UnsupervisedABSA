@@ -1,29 +1,31 @@
+from sentence_transformers import SentenceTransformer
 from transformers import AutoTokenizer, BertForMaskedLM
 from config import *
 from filter_words import filter_words
 import torch
 from tqdm import tqdm, trange
 from torch.utils.data import DataLoader, TensorDataset
-from model import BERTLinear
+from model_sbert import SBERTLinear
 from torch import optim
 import random
 import numpy as np
 import pandas as pd
 from sklearn.metrics import classification_report
 
-class Trainer:
+class TrainerSbert:
 
     def __init__(self):
         self.domain = config['domain']
         self.bert_type = bert_mapper[self.domain]
         self.device = config['device']
         self.tokenizer = AutoTokenizer.from_pretrained(self.bert_type)
+        self.sbert = SentenceTransformer('all-mpnet-base-v2')
         self.root_path = path_mapper[self.domain]
 
         categories = aspect_category_mapper[self.domain]
         polarities = sentiment_category_mapper[self.domain]
 
-        self.model = BERTLinear(self.bert_type, len(
+        self.model = SBERTLinear(self.bert_type, len(
             categories), len(polarities)).to(self.device)
 
         aspect_dict = {}
@@ -47,7 +49,7 @@ class Trainer:
         sentences = []
         cats = []
         pols = []
-        with open(f'{self.root_path}/label-sbert.txt', 'r', encoding="utf8") as f:
+        with open(f'{self.root_path}/label.txt', 'r', encoding="utf8") as f:
             for idx, line in enumerate(f):
                 if idx % 2 == 1:
                     cat, pol = line.strip().split()
@@ -62,10 +64,11 @@ class Trainer:
             max_length=128,
             return_attention_mask=True,
             truncation=True)
+        sentences_vec = self.sbert.encode(sentences, convert_to_tensor=True)
         labels_cat = torch.tensor(cats)
         labels_pol = torch.tensor(pols)
         dataset = TensorDataset(
-            labels_cat, labels_pol, encoded_dict['input_ids'], encoded_dict['token_type_ids'], encoded_dict['attention_mask'])
+            labels_cat, labels_pol, sentences_vec, encoded_dict['input_ids'], encoded_dict['token_type_ids'], encoded_dict['attention_mask'])
         return dataset
 
     def set_seed(self, value):
@@ -93,7 +96,7 @@ class Trainer:
             print_loss = 0
             batch_loss = 0
             cnt = 0
-            for labels_cat, labels_pol, input_ids, token_type_ids, attention_mask in dataloader:
+            for labels_cat, labels_pol, sentences, input_ids, token_type_ids, attention_mask in dataloader:
                 optimizer.zero_grad()
                 encoded_dict = {
                     'input_ids': input_ids.to(device),
@@ -101,7 +104,7 @@ class Trainer:
                     'attention_mask': attention_mask.to(device)
                 }
                 loss, _, _ = model(labels_cat.to(device),
-                                   labels_pol.to(device), **encoded_dict)
+                                   labels_pol.to(device), sentences.to(device), **encoded_dict)
                 loss.backward()
                 optimizer.step()
                 print_loss += loss.item()
@@ -116,14 +119,14 @@ class Trainer:
             with torch.no_grad():
                 val_loss = 0
                 iters = 0
-                for labels_cat, labels_pol, input_ids, token_type_ids, attention_mask in val_dataloader:
+                for labels_cat, labels_pol, sentences, input_ids, token_type_ids, attention_mask in val_dataloader:
                     encoded_dict = {
                         'input_ids': input_ids.to(device),
                         'token_type_ids': token_type_ids.to(device),
                         'attention_mask': attention_mask.to(device)
                     }
                     loss, _, _ = model(labels_cat.to(
-                        device), labels_pol.to(device), **encoded_dict)
+                        device), labels_pol.to(device), sentences,  **encoded_dict)
                     val_loss += loss.item()
                     iters += 1
                 val_loss /= iters
@@ -131,45 +134,11 @@ class Trainer:
             print("epoch : {:4}/{}, train_loss = {:.6f}, val_loss = {:.6f}".format(
                 epoch + 1, epochs, print_loss, val_loss))
 
-    def save_model(self, name, model_path=None):
-        if model_path:
-          path = model_path
-        else:
-          path = self.root_path
-        torch.save(self.model, f'{path}/{name}.pth')
+    def save_model(self, name):
+        torch.save(self.model, f'{self.root_path}/{name}.pth')
 
-    def load_model(self, name, model_path=None):
-        if model_path:
-            path = model_path
-        else:
-          path = self.root_path
-        self.model = torch.load(f'{path}/{name}.pth', map_location=torch.device(self.device))
-        
-    def predict(self, sentences):
-        model = self.model
-        model.eval()
-        device = self.device
-        
-        predicted_aspect = []
-        predicted_polarity = []
-        
-        with torch.no_grad():
-          for input in tqdm(sentences):
-            encoded_dict = self.tokenizer([input],
-                                          padding=True,
-                                          return_tensors='pt',
-                                          return_attention_mask=True,
-                                          truncation=True).to(device)
-            
-            loss, logits_cat, logits_pol = model(torch.tensor([4]).to(
-                    device), torch.tensor([0]).to(device),**encoded_dict)
-            
-            predicted_aspect.append(
-                    self.aspect_dict[torch.argmax(logits_cat).item()])
-            predicted_polarity.append(
-                self.polarity_dict[torch.argmax(logits_pol).item()])
-       
-        return predicted_aspect, predicted_polarity, logits_cat, logits_pol
+    def load_model(self, name):
+        self.model = torch.load(f'{self.root_path}/{name}.pth')
 
     def evaluate(self):
         test_sentences = []
@@ -208,8 +177,10 @@ class Trainer:
                                               return_attention_mask=True,
                                               truncation=True).to(device)
 
+                input_vec = self.sbert.encode([input], convert_to_tensor=True)
+
                 loss, logits_cat, logits_pol = model(torch.tensor([cat]).to(
-                    device), torch.tensor([pol]).to(device), **encoded_dict)
+                    device), torch.tensor([pol]).to(device), input_vec.to(device), **encoded_dict)
 
                 actual_aspect.append(self.aspect_dict[cat])
                 actual_polarity.append(self.polarity_dict[pol])

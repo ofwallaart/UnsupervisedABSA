@@ -17,10 +17,10 @@ def load_obj(name ):
 def run():
   vocabGenerator = VocabGenerator()
   aspect_vocabularies, sentiment_vocabularies = vocabGenerator()
-  
+
   extracter = Extracter()
   sentences, aspects, opinions = extracter()
-  
+
   save_obj(aspect_vocabularies, 'aspect_vocabularies')
   save_obj(sentiment_vocabularies, 'sentiment_vocabularies')
   save_obj(sentences, 'sentences')
@@ -45,6 +45,16 @@ def run():
   trainer.save_model('model')
   trainer.load_model('model')
   trainer.evaluate()
+
+# print('-------')
+# print('Start training model with Sentence Transformers')
+#
+# trainersbert = TrainerSbert()
+# dataset = trainersbert.load_training_data()
+# trainersbert.train_model(dataset)
+# trainersbert.save_model('model_sbert')
+# trainersbert.load_model('model_sbert')
+# trainersbert.evaluate()
 
 
 

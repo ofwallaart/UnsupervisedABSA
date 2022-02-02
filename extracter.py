@@ -1,8 +1,10 @@
 from tqdm import tqdm
 from config import *
 import nl_core_news_sm
+from bertopic import BERTopic
 import spacy
-
+import numpy as np
+from sklearn.metrics import pairwise
 
 class Extracter:
     '''
@@ -12,6 +14,8 @@ class Extracter:
     def __init__(self):
         spacy.prefer_gpu()
         self.smodel = nl_core_news_sm.load() #nl_core_news_sm
+        self.smodel = spacy.load('en_core_web_sm') #nl_core_news_sm
+        self.topic_model = BERTopic(verbose=True, calculate_probabilities=True)
         self.domain = config['domain']
         self.root_path = path_mapper[self.domain]
 
@@ -38,4 +42,34 @@ class Extracter:
                 opinions.append(' '.join(o) if len(o) > 0 else '##')
                 aspects.append(' '.join(a) if len(a) > 0 else '##')
 
-        return sentences, aspects, opinions
+        print('Training topic model:')
+        aspect_categories = aspect_category_mapper[self.domain]
+        aspect_seeds = aspect_seed_mapper[self.domain]
+
+        sentence_aspects = []
+        cat_table = {}
+        cat_vec = []
+
+        topics, probs = self.topic_model.fit_transform(sentences)
+
+        for category in aspect_categories:
+            data = self.topic_model.find_topics(" ".join(list(aspect_seeds[category])), top_n=10)
+            cat_vec.append(" ".join(list(aspect_seeds[category])))
+            cat_table[category] = [data[0][i] for i in [i for i, e in enumerate(data[1]) if e >= 0.4]]
+
+        cat_vec_table = self.topic_model.transform(cat_vec)[1]
+
+        vecs = pairwise.cosine_similarity(cat_vec_table, probs)
+
+        vecs_list = np.argmax(vecs, axis=0).tolist()
+
+        for vec in vecs_list:
+            sentence_aspects.append(aspect_categories[vec])
+
+        # for topic in topics:
+        #     for key, value in cat_table.items():
+        #         if topic in value:
+        #             sentence_aspects.append(key)
+        #             break
+
+        return sentences, aspects, opinions, sentence_aspects
