@@ -131,11 +131,45 @@ class Trainer:
             print("epoch : {:4}/{}, train_loss = {:.6f}, val_loss = {:.6f}".format(
                 epoch + 1, epochs, print_loss, val_loss))
 
-    def save_model(self, name):
-        torch.save(self.model, f'{self.root_path}/{name}.pth')
+    def save_model(self, name, model_path=None):
+        if model_path:
+          path = model_path
+        else:
+          path = self.root_path
+        torch.save(self.model, f'{path}/{name}.pth')
 
-    def load_model(self, name):
-        self.model = torch.load(f'{self.root_path}/{name}.pth')
+    def load_model(self, name, model_path=None):
+        if model_path:
+            path = model_path
+        else:
+          path = self.root_path
+        self.model = torch.load(f'{path}/{name}.pth', map_location=torch.device(self.device))
+        
+    def predict(self, sentences):
+        model = self.model
+        model.eval()
+        device = self.device
+        
+        predicted_aspect = []
+        predicted_polarity = []
+        
+        with torch.no_grad():
+          for input in tqdm(sentences):
+            encoded_dict = self.tokenizer([input],
+                                          padding=True,
+                                          return_tensors='pt',
+                                          return_attention_mask=True,
+                                          truncation=True).to(device)
+            
+            loss, logits_cat, logits_pol = model(torch.tensor([4]).to(
+                    device), torch.tensor([0]).to(device),**encoded_dict)
+            
+            predicted_aspect.append(
+                    self.aspect_dict[torch.argmax(logits_cat).item()])
+            predicted_polarity.append(
+                self.polarity_dict[torch.argmax(logits_pol).item()])
+       
+        return predicted_aspect, predicted_polarity, logits_cat, logits_pol
 
     def evaluate(self):
         test_sentences = []

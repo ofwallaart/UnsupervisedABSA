@@ -38,7 +38,7 @@ class VocabGenerator:
             with open(f'{self.root_path}/train.txt', encoding="utf8") as f:
                 for line in tqdm(f):
                     text = line.strip()
-                    # if category in text:
+                    #if category in text:
                     if not set(seeds[category]).isdisjoint(text.split()):
                         ids = self.tokenizer(text, return_tensors='pt', truncation=True)['input_ids']
                         tokens = self.tokenizer.convert_ids_to_tokens(ids[0])
@@ -48,7 +48,7 @@ class VocabGenerator:
                         for idx, token in enumerate(tokens):
                             if token in seeds[category]:
                                 self.update_table(freq_table, category, self.tokenizer.convert_ids_to_tokens(word_ids[idx]))
-        
+
         # Remove words appearing in multiple vocabularies (generate disjoint sets)
         for category in categories:
             for key in freq_table[category]:
