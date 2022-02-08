@@ -34,17 +34,17 @@ aspect_seed_mapper = {
         'service': {"tips", "manager", "waitress", "rude", "forgetful", "host", "server", "service", "quick", "staff"}
     },
     'kto': {
-        'service': {"scanner", "zelfscan", "handscanner", "afrekenen", "kassa", "rij", "wachttijd", "servicebalie", "service", "balie", "servicedesk"},
-        'kwaliteit': {"groenten", "fruit", "vers", "kwaliteit", "rot", "beschimmeld", "houdbaarheid"},
-        'app': {"app", "looproute", "boodschappenlijst", "gebruik"},
-        'winkel': {"parkeren","fiets","buiten","parkeerplaats","fietsenstalling","hangjongeren", "smal", "indeling", "toilet", "ruimte", "opzet", "uitbreiden", "ingang", "wifi", "internet", "muziek"},
-        'assortiment': {"assortiment", "aanbod", "verdwenen", "biologische", "vegan"},
+        'service': {"scanner", "zelfscan", "handscanner", "houders", "afrekenen", "kassa", "rij", "wachttijd", "servicebalie", "wachttijd", "service", "balie", "servicedesk"},
+        'kwaliteit': {"vers", "kwaliteit", "rot", "beschimmeld", "houdbaarheid"},
+        'app': {"app", "looproute"},
+        'winkel': {"Parkeren","fiets","buiten","parkeerplaats","fietsenstalling","hangjongeren","garage", "smal", "indeling", "toilet", "ruimte", "opzet", "uitbreiden", "ingang", "inpaktafel", "wifi", "internet", "muziek"},
+        'assortiment': {"assortiment", "aanbod", "biologische", "vegan"},
         'beschikbaarheid': {"beschikbaarheid", "uitverkocht", "voorraad", "verkrijgbaar", "leeg", "aanvullen", "brood", "afbakken", "bonus"},
-        'personeel': {"klantvriendelijk", "begroeten", "behulpzaam", "hulp", "personeel", "vragen", "aanwezig", "aanspreken", "versperren", "blokkeren", "obstakels", "vakkenvullers"},
+        'personeel': {"klantvriendelijk", "begroeten", "behulpzaam", "vriendelijk", "hulp", "personeel", "weinig", "vragen", "aanwezig", "aanspreken", "versperren", "gangpad", "blokkeren", "obstakels", "vakkenvullers"},
         'corona': {"corona", "covid", "mondkapje", "desinfecteren", "coronamaatregelen", "maatregelen", "winkelwagen"},
-        'opgeruimd': {"rommelig", "smerig", "schoon", "vies", "opruimen", "schoonmaken", "opgeruimd", "spiegelen", "prullenbak"},
+        'opgeruimd': {"rommelig", "smerig", "afval", "vies", "opruimen", "schoon", "opgeruimd", "spiegelen", "prullenbak"},
         'prijzen': {"prijs", "duur", "goedkoper", "35%"},
-        'overig': {"plastic", "bloemen", "bezorgen", "reeds", "hiervoor", "vermeld", "aangegeven", "enquete", "opmerking"}
+        'overig': {"duurzaam", "bloemen", "bezorgen", "reeds", "vermeld", "enquete", "eerdere", "opmerking"}
     }
 }
 sentiment_category_mapper = {

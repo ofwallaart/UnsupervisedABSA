@@ -1,3 +1,4 @@
+from trainer_sbert import TrainerSbert
 from vocab_generator import VocabGenerator
 from extracter import Extracter
 from score_computer import ScoreComputer
