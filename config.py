@@ -34,17 +34,17 @@ aspect_seed_mapper = {
         'service': {"tips", "manager", "waitress", "rude", "forgetful", "host", "server", "service", "quick", "staff"}
     },
     'kto': {
-        'service': {"scanner", "zelfscan", "handscanner", "houders", "afrekenen", "kassa", "rij", "wachttijd", "servicebalie", "wachttijd", "service", "balie", "servicedesk"},
+        'service': {"scanner", "zelfscan", "handscanner", "afrekenen", "kassa", "rij", "wachttijd", "servicebalie", "service", "balie", "servicedesk"},
         'kwaliteit': {"groenten", "fruit", "vers", "kwaliteit", "rot", "beschimmeld", "houdbaarheid"},
         'app': {"app", "looproute", "boodschappenlijst", "gebruik"},
-        'winkel': {"Parkeren","fiets","buiten","parkeerplaats","fietsenstalling","hangjongeren","garage", "smal", "indeling", "toilet", "ruimte", "opzet", "uitbreiden", "ingang", "inpaktafel", "wifi", "internet", "muziek"},
-        'assortiment': {"assortiment", "aanbod", "biologische", "vegan"},
+        'winkel': {"parkeren","fiets","buiten","parkeerplaats","fietsenstalling","hangjongeren", "smal", "indeling", "toilet", "ruimte", "opzet", "uitbreiden", "ingang", "wifi", "internet", "muziek"},
+        'assortiment': {"assortiment", "aanbod", "verdwenen", "biologische", "vegan"},
         'beschikbaarheid': {"beschikbaarheid", "uitverkocht", "voorraad", "verkrijgbaar", "leeg", "aanvullen", "brood", "afbakken", "bonus"},
-        'personeel': {"klantvriendelijk", "begroeten", "service", "behulpzaam", "vriendelijk", "hulp", "personeel", "weinig", "vragen", "aanwezig", "aanspreken", "versperren", "gangpad", "blokkeren", "obstakels", "vakkenvullers"},
+        'personeel': {"klantvriendelijk", "begroeten", "behulpzaam", "hulp", "personeel", "vragen", "aanwezig", "aanspreken", "versperren", "blokkeren", "obstakels", "vakkenvullers"},
         'corona': {"corona", "covid", "mondkapje", "desinfecteren", "coronamaatregelen", "maatregelen", "winkelwagen"},
-        'opgeruimd': {"rommelig", "smerig", "zwerfafval", "vies", "opruimen", "schoon", "opgeruimd", "spiegelen", "prullenbak"},
+        'opgeruimd': {"rommelig", "smerig", "schoon", "vies", "opruimen", "schoonmaken", "opgeruimd", "spiegelen", "prullenbak"},
         'prijzen': {"prijs", "duur", "goedkoper", "35%"},
-        'overig': {"plastic", "duurzaam", "bloemen", "bezorgen", "reeds", "hiervoor", "vermeld", "aangegeven", "enquete", "eerdere", "opmerking"}
+        'overig': {"plastic", "bloemen", "bezorgen", "reeds", "hiervoor", "vermeld", "aangegeven", "enquete", "opmerking"}
     }
 }
 sentiment_category_mapper = {
@@ -63,7 +63,7 @@ sentiment_seed_mapper = {
     },
     'kto': {
         'positive': {"goed", 'uitstekend', "excellent", "perfect"},
-        'negative': {"slecht", "betere", "teleurgesteld", "verschrikkelijk", "langzaam", "kapot", "klacht", "vies"}
+        'negative': {"slecht", "betere", "teleurgesteld", "verschrikkelijk", "langzaam", "kapot", "klacht", "vies", "onvriendelijk"}
     }
 }
 M = {
@@ -75,6 +75,6 @@ K_1 = 5
 K_2 = 20
 lambda_threshold = 0.5
 batch_size = 64
-validation_data_size = 100
+validation_data_size = 150
 learning_rate = 1e-5
-epochs = 25
+epochs = 15

@@ -2,26 +2,25 @@ import torch
 import numpy as np
 from sentence_transformers import SentenceTransformer, util
 from config import *
+import re
 
 
 def load_training_data(file_path):
     sentences = []
     for line in open(file_path, encoding="utf-8"):
-        sentences.append(line.lower().strip())
+        split_lines = list(filter(None, re.split('; |\. |\! |\n|\? ', line.lower())))
+        for split_line in split_lines:
+          sentences.append(split_line.strip())
     return sentences
 
 
 class Labeler:
-    def __init__(self, root_path):
+    def __init__(self):
         self.domain = config['domain']
-        self.model = SentenceTransformer('all-mpnet-base-v2', device=config['device'])
+        self.model = SentenceTransformer('paraphrase-multilingual-mpnet-base-v2', device=config['device']) # paraphrase-multilingual-mpnet-base-v2
+        self.root_path = path_mapper[self.domain]
         self.cat_threshold = 0.4
         self.pol_threshold = 0.3
-
-        if root_path:
-            self.root_path = root_path
-        else:
-            self.root_path = path_mapper[self.domain]
 
     def __call__(self):
         categories = aspect_category_mapper[self.domain]
@@ -42,7 +41,7 @@ class Labeler:
         seed_embeddings = self.model.encode(list(seeds.values()), convert_to_tensor=True, show_progress_bar=True)
 
         # Load and encode the train set
-        sentences = load_training_data(path)
+        sentences = load_training_data(f'{self.root_path}/train.txt')
         embeddings = self.model.encode(sentences, convert_to_tensor=True, show_progress_bar=True)
 
         # Compute cosine-similarities
@@ -59,7 +58,7 @@ class Labeler:
         # No conflict (avoid multi-class sentences)
         labels = np.transpose(labels[:, (labels[1, :] >= self.cat_threshold) & (labels[3, :] >= self.pol_threshold)])
 
-        nf = open(f'../../../../Repositories/UnsupervisedABSA/datasets/restaurant/label-sbert.txt' , 'w', encoding="utf8")
+        nf = open(f'{self.root_path}/label-sbert.txt' , 'w', encoding="utf8")
         cnt = {}
 
         for label in labels:
@@ -77,6 +76,6 @@ class Labeler:
         print(cnt)
 
 if __name__ == '__main__':
-    path = r"C:\Repositories\UnsupervisedABSA\datasets\restaurant\train.txt"
-    labeler = Labeler(path)
+    path = r".\train.txt"
+    labeler = Labeler()
     labeler()

@@ -1,7 +1,7 @@
 from vocab_generator import VocabGenerator
 from extracter import Extracter
 from score_computer import ScoreComputer
-from labeler import Labeler
+from labeler_sbert import Labeler
 from trainer import Trainer
 import pickle
 
@@ -15,17 +15,17 @@ def load_obj(name ):
 
 
 def run():
-  vocabGenerator = VocabGenerator()
-  aspect_vocabularies, sentiment_vocabularies = vocabGenerator()
+  # vocabGenerator = VocabGenerator()
+  # aspect_vocabularies, sentiment_vocabularies = vocabGenerator()
 
-  extracter = Extracter()
-  sentences, aspects, opinions = extracter()
+  # extracter = Extracter()
+  # sentences, aspects, opinions = extracter()
 
-  save_obj(aspect_vocabularies, 'aspect_vocabularies')
-  save_obj(sentiment_vocabularies, 'sentiment_vocabularies')
-  save_obj(sentences, 'sentences')
-  save_obj(aspects, 'aspects')
-  save_obj(opinions, 'opinions')
+  # save_obj(aspect_vocabularies, 'aspect_vocabularies')
+  # save_obj(sentiment_vocabularies, 'sentiment_vocabularies')
+  # save_obj(sentences, 'sentences')
+  # save_obj(aspects, 'aspects')
+  # save_obj(opinions, 'opinions')
 
   # aspect_vocabularies = load_obj('aspect_vocabularies')
   # sentiment_vocabularies = load_obj('sentiment_vocabularies')
@@ -33,8 +33,8 @@ def run():
   # aspects = load_obj('aspects')
   # opinions = load_obj('opinions')
 
-  scoreComputer = ScoreComputer(aspect_vocabularies, sentiment_vocabularies)
-  scoreComputer(sentences, aspects, opinions)
+  # scoreComputer = ScoreComputer(aspect_vocabularies, sentiment_vocabularies)
+  # scoreComputer(sentences, aspects, opinions)
 
   labeler = Labeler()
   labeler()
