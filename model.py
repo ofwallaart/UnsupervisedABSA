@@ -30,8 +30,8 @@ class BERTLinear(nn.Module):
             bert_type, output_hidden_states=True)
         self.ff_cat = nn.Linear(768, num_cat)
         self.ff_pol = nn.Linear(768, num_pol)
-        self.aspect_weights = [345, 67, 201] #[164, 31, 73, 182, 78, 45, 173, 87, 66, 13, 50]
-        self.sentiment_weights = [231, 382] #[927, 35]
+        self.aspect_weights = weights['aspect_weights'][config['domain']]
+        self.sentiment_weights = weights['sentiment_weights'][config['domain']]
 
     def forward(self, labels_cat, labels_pol, **kwargs):
         outputs = self.bert(**kwargs)

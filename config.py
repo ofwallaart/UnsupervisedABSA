@@ -1,5 +1,5 @@
 config = {
-    'domain': 'kto',
+    'domain': 'restaurant',
     'device': 'cuda'
 }
 bert_mapper = {
@@ -66,6 +66,20 @@ sentiment_seed_mapper = {
         'negative': {"slecht", "betere", "teleurgesteld", "verschrikkelijk", "langzaam", "kapot", "klacht", "vies"}
     }
 }
+
+weights = {
+    'aspect_weights': {
+        'laptop': [100, 100, 100, 100, 100],
+        'restaurant': [345, 67, 201],
+        'kto': [164, 31, 73, 182, 78, 45, 173, 87, 66, 13, 50]
+    },
+    'sentiment_weights': {
+        'laptop': [100, 100],
+        'restaurant': [231, 382],
+        'kto': [927, 35]
+    }
+}
+
 M = {
     'laptop': 150,
     'restaurant': 100,
