@@ -92,6 +92,13 @@ M = {
     'restaurant': 100,
     'kto': 100
 }
+
+N = {
+    'laptop': 9,
+    'restaurant': 14,
+    'kto': 1
+}
+
 K_1 = 10
 K_2 = 30
 lambda_threshold = 0.5
