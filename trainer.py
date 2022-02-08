@@ -10,6 +10,7 @@ import random
 import numpy as np
 import pandas as pd
 from sklearn.metrics import classification_report
+import re
 
 class Trainer:
 
@@ -136,6 +137,61 @@ class Trainer:
 
     def load_model(self, name):
         self.model = torch.load(f'{self.root_path}/{name}.pth')
+
+    def predict(self, sentences):
+        model = self.model
+        model.eval()
+        device = self.device
+
+        predicted_aspect = []
+        predicted_polarity = []
+
+        logits_cats = []
+        logits_pols = []
+
+        with torch.no_grad():
+            for input in tqdm(sentences):
+                encoded_dict = self.tokenizer([input],
+                                              padding=True,
+                                              return_tensors='pt',
+                                              return_attention_mask=True,
+                                              truncation=True).to(device)
+
+                loss, logits_cat, logits_pol = model(torch.tensor([0]).to(
+                    device), torch.tensor([0]).to(device), **encoded_dict)
+
+                predicted_aspect.append(
+                    self.aspect_dict[torch.argmax(logits_cat).item()])
+                predicted_polarity.append(
+                    self.polarity_dict[torch.argmax(logits_pol).item()])
+
+                logits_cats.append(logits_cat)
+                logits_pols.append(logits_pol)
+
+        return predicted_aspect, predicted_polarity, torch.cat(logits_cats, 0), torch.cat(logits_pols, 0)
+
+    def predict_multiple(self, sentences, threshold=2):
+        split_sentences = []
+        indices = []
+        # Split sentence at end of sentence character to predict individually
+        for i, line in tqdm(enumerate(sentences), desc='Split sentence'):
+            split_lines = list(filter(None, re.split('; |\. |\! |\n| \?', line.lower())))
+            for split_line in split_lines:
+                split_sentences.append(split_line.strip())
+                indices.append(i)
+
+        _, predicted_polarity, logits_cat, logits_pol = self.predict(split_sentences)
+
+        # Sum up separated sentences based on indices
+        logits_cat_added = torch.zeros(len(sentences), len(self.aspect_dict)).to(self.device)
+        logits_cat_added = logits_cat_added.index_add(0, torch.tensor(indices).to(self.device), logits_cat)
+
+        # Only keep aspects where the total log prob value is above threshold
+        predicted_aspects = [[] for _ in range(len(sentences))]
+        for i, j in zip(*(logits_cat_added > threshold).nonzero(as_tuple=True)):
+            predicted_aspects[i].append(self.aspect_dict[j.item()])
+
+        return predicted_aspects, predicted_polarity, logits_cat, logits_pol
 
     def evaluate(self):
         test_sentences = []
