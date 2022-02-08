@@ -35,16 +35,16 @@ aspect_seed_mapper = {
     },
     'kto': {
         'service': {"scanner", "zelfscan", "handscanner", "houders", "afrekenen", "kassa", "rij", "wachttijd", "servicebalie", "wachttijd", "service", "balie", "servicedesk"},
-        'kwaliteit': {"groenten", "fruit", "vers", "kwaliteit", "rot", "beschimmeld", "houdbaarheid"},
-        'app': {"app", "looproute", "boodschappenlijst", "gebruik"},
+        'kwaliteit': {"vers", "kwaliteit", "rot", "beschimmeld", "houdbaarheid"},
+        'app': {"app", "looproute"},
         'winkel': {"Parkeren","fiets","buiten","parkeerplaats","fietsenstalling","hangjongeren","garage", "smal", "indeling", "toilet", "ruimte", "opzet", "uitbreiden", "ingang", "inpaktafel", "wifi", "internet", "muziek"},
         'assortiment': {"assortiment", "aanbod", "biologische", "vegan"},
         'beschikbaarheid': {"beschikbaarheid", "uitverkocht", "voorraad", "verkrijgbaar", "leeg", "aanvullen", "brood", "afbakken", "bonus"},
-        'personeel': {"klantvriendelijk", "begroeten", "service", "behulpzaam", "vriendelijk", "hulp", "personeel", "weinig", "vragen", "aanwezig", "aanspreken", "versperren", "gangpad", "blokkeren", "obstakels", "vakkenvullers"},
+        'personeel': {"klantvriendelijk", "begroeten", "behulpzaam", "vriendelijk", "hulp", "personeel", "weinig", "vragen", "aanwezig", "aanspreken", "versperren", "gangpad", "blokkeren", "obstakels", "vakkenvullers"},
         'corona': {"corona", "covid", "mondkapje", "desinfecteren", "coronamaatregelen", "maatregelen", "winkelwagen"},
-        'opgeruimd': {"rommelig", "smerig", "zwerfafval", "vies", "opruimen", "schoon", "opgeruimd", "spiegelen", "prullenbak"},
+        'opgeruimd': {"rommelig", "smerig", "afval", "vies", "opruimen", "schoon", "opgeruimd", "spiegelen", "prullenbak"},
         'prijzen': {"prijs", "duur", "goedkoper", "35%"},
-        'overig': {"plastic", "duurzaam", "bloemen", "bezorgen", "reeds", "hiervoor", "vermeld", "aangegeven", "enquete", "eerdere", "opmerking"}
+        'overig': {"duurzaam", "bloemen", "bezorgen", "reeds", "vermeld", "enquete", "eerdere", "opmerking"}
     }
 }
 sentiment_category_mapper = {
