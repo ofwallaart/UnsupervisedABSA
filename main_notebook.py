@@ -107,3 +107,110 @@ cmp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=classes)
 
 fig, ax = plt.subplots(figsize=(5,5))
 cmp.plot(ax=ax, xticks_rotation='vertical')
+
+# COMMAND ----------
+
+# MAGIC %md ## Apply business rules
+
+# COMMAND ----------
+
+# MAGIC %run /Basics/imports
+
+# COMMAND ----------
+
+rules = [
+  {
+    'rule': 'App', 
+    'map_condition': ['app', 'ah-app', 'ahapp'], 
+    'map_to_aspect': 'app'
+  },
+  {
+    'rule': 'Corona', 
+    'map_condition': ['corona', 'covid', 'covid-19', 'mondkap', 'mondkapje', 'mondkapjes', 'mondmaskers', '1.5 meter', '1,5 meter', '1,5 mtr', '1.5 mtr', '1,5m', '1.5m', '1,5 m', '1.5 m'], 
+    'map_to_aspect': 'corona'
+  },
+  {
+    'rule': 'Indeling', 
+    'map_condition': ['indeling van de winkel', 'klantentoilet', 'klanten wc', 'toilet', 'koffiecorner', 'koffiecorner', 'kleine winkel', 'winkelindeling', 'wc', 'koffiehoek', 'inpaktafel', 'inpak tafel', 'winkel uitbreiden', 'ruimere winkel', 'groter pand', 'groter winkeloppervlak', 'ruimer opzetten', 'ruimere opzet'], 
+    'map_to_aspect': 'winkel'
+  },
+  {
+    'rule': 'Muziek / Wifi', 
+    'map_condition': ['muziek', 'wifi', 'geen internet', 'achtergrondmuziek'], 
+    'map_to_aspect': 'winkel'},
+  {
+    'rule': 'Fiets / garage', 
+    'map_condition': ['fietsenstalling', 'fietsenrekken', 'fiets', 'fietsen', 'buitenterrein', 'garage', 'parkeerterrein', 'parkeerplaatsen', 'parkeergarage', 'parkeerplaats'], 
+    'map_to_aspect': 'winkel'
+  },
+  {
+    'rule': 'Goed / Doorgaan', 
+    'map_condition': ['ga zo door', 'geen tips', 'gewoon zo doorgaan', 'vooral zo doorgaan', 'zo door gaan', 'zo doorgaan', 'ga vooral zo door', 'doorgaan'], 
+    'map_to_aspect': 'winkel', 
+    'map_to_sentiment' : 'positive', 
+    'max_length': 5 
+  },
+  {
+    'rule': 'Overig', 
+    'map_condition': ['bezorgdienst', 'bezorging', 'bezorgservice', 'bestelmogelijkheid', 'thuisbezorgen', 'duurzaam', 'duurzaamheid', 'duurzamer', 'bezorgen', 'plastic verpakking', 'plastic verpakkingen'], 
+    'map_to_aspect': 'overig'
+  },
+  {
+    'rule': 'Kwaliteit', 
+    'map_condition': ['beschimmeld', 'rijp', 'fifo', 'versheid'], 
+    'map_to_aspect': 'kwaliteit'},
+  {
+    'rule': 'Service', 
+    'map_condition': ['creditscards', 'credit cards', 'creditcard', 'credit card', 'visa'], 
+    'map_to_aspect': 'service' 
+  },
+  {
+    'rule': 'Assortiment', 
+    'map_condition': ['assortimentskeuze', 'meer vegetarische', 'meer vega', 'meer lokale producten', 'meer vegan'], 
+    'map_to_aspect': 'assortiment'
+  }
+]
+
+# COMMAND ----------
+
+sentences = df.select(F.lower('sentence')).rdd.flatMap(lambda x: x).collect()
+cat = df.select(F.lower('actual category')).rdd.flatMap(lambda x: x).collect()
+rule_overwrite_aspect = [None for _ in range(len(sentences))]
+rule_overwrite_polarity = [None for _ in range(len(sentences))]
+for i, sentence in enumerate(sentences):
+  for rule in rules:
+    if 'max_length' in rule:
+      if len(sentence.split()) > rule['max_length']:
+        continue
+    for condition in rule['map_condition']:
+      if i == 218:
+        print(condition, sentence)
+      if " " + condition + " " in " " + sentence + " ":
+        rule_overwrite_aspect[i] = rule['map_to_aspect']
+        print(cat[i], '\t', rule['map_to_aspect'], ' ', sentence)
+        if 'map_to_sentiment' in rule:
+          rule_overwrite_polarity[i] = rule['map_to_sentiment']
+        break
+        
+pd_df = df.toPandas()
+pd_df['rule_overwrite_aspect'] = rule_overwrite_aspect
+pd_df['rule_overwrite_polarity'] = rule_overwrite_polarity
+
+pd_df['merged_aspect'] = pd_df['rule_overwrite_aspect'].combine_first(pd_df['predicted category'])
+pd_df['merged_polarity'] = pd_df['rule_overwrite_polarity'].combine_first(pd_df['predicted polarity'])
+
+# COMMAND ----------
+
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import classification_report
+
+classes = df.select('actual category').distinct().rdd.flatMap(lambda x: x).collect()
+
+print(classification_report(pd_df['actual category'], pd_df['merged_aspect']))
+
+cm = confusion_matrix(pd_df['actual category'], pd_df['merged_aspect'], labels=classes)
+cmp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=classes)
+
+fig, ax = plt.subplots(figsize=(15,15))
+cmp.plot(ax=ax, xticks_rotation='vertical')
