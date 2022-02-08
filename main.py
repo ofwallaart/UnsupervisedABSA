@@ -2,7 +2,7 @@ from trainer_sbert import TrainerSbert
 from vocab_generator import VocabGenerator
 from extracter import Extracter
 from score_computer import ScoreComputer
-from labeler import Labeler
+from labeler_sbert import Labeler
 from trainer import Trainer
 import pickle
 
@@ -36,9 +36,9 @@ def load_obj(name ):
 #
 # scoreComputer = ScoreComputer(aspect_vocabularies, sentiment_vocabularies)
 # scoreComputer(sentences, aspects, opinions)
-#
+
 # labeler = Labeler()
-# labeler(sentence_aspects)
+# labeler()
 
 trainer = Trainer()
 dataset = trainer.load_training_data()

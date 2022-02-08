@@ -30,8 +30,8 @@ class BERTLinear(nn.Module):
             bert_type, output_hidden_states=True)
         self.ff_cat = nn.Linear(768, num_cat)
         self.ff_pol = nn.Linear(768, num_pol)
-        self.aspect_weights = [345, 67, 201] # [0, 319, 179, 95, 150, 203, 184] #[345, 67, 201] # aspect category distribution (restaurant) [1, 4, 6, 3, 1, 5, 2, 1, 1, 2, 1, 10, 1, 7, 1, 2, 56, 9, 2, 3, 2, 3] #
-        self.sentiment_weights = [231, 382] # sentiment category distribution (restaurant) [46, 73] #
+        self.aspect_weights = [345, 67, 201] #[164, 31, 73, 182, 78, 45, 173, 87, 66, 13, 50]
+        self.sentiment_weights = [231, 382] #[927, 35]
 
     def forward(self, labels_cat, labels_pol, **kwargs):
         outputs = self.bert(**kwargs)
