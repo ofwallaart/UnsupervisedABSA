@@ -17,13 +17,15 @@ def load_training_data(file_path):
 class Labeler:
     def __init__(self):
         self.domain = config['domain']
-        self.model = SentenceTransformer('all-mpnet-base-v2', device=config['device'])
+        self.model = SentenceTransformer('paraphrase-multilingual-mpnet-base-v2', device=config['device']) # paraphrase-multilingual-mpnet-base-v2
+        self.root_path = path_mapper[self.domain]
         self.cat_threshold = 0.4
         self.pol_threshold = 0.3
         self.root_path = path_mapper[self.domain]
         self.categories = aspect_category_mapper[self.domain]
         self.polarities = sentiment_category_mapper[self.domain]
         self.labels = None
+
 
     def __call__(self):
         category_seeds = aspect_seed_mapper[self.domain]
@@ -85,6 +87,7 @@ class Labeler:
         labels = np.transpose(labels[:, (labels[1, :] >= cat_threshold) & (labels[3, :] >= pol_threshold)])
 
         nf = open(f'{self.root_path}/label-sbert.txt', 'w', encoding="utf8")
+
         cnt = {}
 
         for label in labels:
@@ -103,6 +106,8 @@ class Labeler:
 
 
 if __name__ == '__main__':
+    path = r".\train.txt"
+
     labeler = Labeler()
     labeler()
     with open("labeler.pickle", "wb") as file_:

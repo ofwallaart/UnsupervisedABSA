@@ -63,7 +63,7 @@ sentiment_seed_mapper = {
     },
     'kto': {
         'positive': {"goed", 'uitstekend', "excellent", "perfect"},
-        'negative': {"slecht", "betere", "teleurgesteld", "verschrikkelijk", "langzaam", "kapot", "klacht", "vies"}
+        'negative': {"slecht", "betere", "teleurgesteld", "verschrikkelijk", "langzaam", "kapot", "klacht", "vies", "onvriendelijk"}
     }
 }
 M = {
@@ -75,6 +75,6 @@ K_1 = 5
 K_2 = 20
 lambda_threshold = 0.5
 batch_size = 64
-validation_data_size = 100
+validation_data_size = 150
 learning_rate = 1e-5
-epochs = 25
+epochs = 15

@@ -19,7 +19,7 @@ class TrainerSbert:
         self.bert_type = bert_mapper[self.domain]
         self.device = config['device']
         self.tokenizer = AutoTokenizer.from_pretrained(self.bert_type)
-        self.sbert = SentenceTransformer('all-mpnet-base-v2')
+        self.sbert = SentenceTransformer('paraphrase-multilingual-mpnet-base-v2') #all-mpnet-base-v2
         self.root_path = path_mapper[self.domain]
 
         categories = aspect_category_mapper[self.domain]
