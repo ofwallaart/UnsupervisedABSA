@@ -12,9 +12,13 @@ class Extracter:
 
     def __init__(self):
         spacy.prefer_gpu()
-        self.smodel = spacy.load('en_core_web_sm') #nl_core_news_sm
-        self.topic_model = BERTopic(verbose=True, calculate_probabilities=True)
         self.domain = config['domain']
+        if self.domain == 'kto':
+            self.smodel = spacy.load('nl_core_news_sm')
+        else:
+            self.smodel = spacy.load('en_core_web_sm')
+
+        self.topic_model = BERTopic(verbose=True, calculate_probabilities=True)
         self.root_path = path_mapper[self.domain]
 
     def __call__(self):
@@ -31,10 +35,11 @@ class Extracter:
                 o = []
                 a = []
                 for word in words:
-                    if word.tag_.startswith('JJ') or word.tag_.startswith('RR'): #ADJ| BW
+                    if word.tag_.startswith('ADJ' if self.domain == 'kto' else 'JJ') \
+                            or word.tag_.startswith('BW' if self.domain == 'kto' else 'RR'):
                         # Adjective or Adverb
                         o.append(word.text)
-                    if word.tag_.startswith('NN'): #N|
+                    if word.tag_.startswith('N' if self.domain == 'kto' else 'NN'):
                         # Noun
                         a.append(word.text)
                 opinions.append(' '.join(o) if len(o) > 0 else '##')

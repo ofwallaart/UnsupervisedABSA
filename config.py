@@ -7,6 +7,13 @@ bert_mapper = {
     'restaurant': 'activebus/BERT-DK_rest',
     'kto': './datasets/kto/BERT-DK_kto'
 }
+
+sbert_mapper = {
+    'laptop': 'all-mpnet-base-v2',
+    'restaurant': 'all-mpnet-base-v2',
+    'kto': 'paraphrase-multilingual-mpnet-base-v2'
+}
+
 path_mapper = {
     'laptop': './datasets/laptop',
     'restaurant': './datasets/restaurant',

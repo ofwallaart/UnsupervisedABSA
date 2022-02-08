@@ -17,7 +17,7 @@ def load_training_data(file_path):
 class Labeler:
     def __init__(self):
         self.domain = config['domain']
-        self.model = SentenceTransformer('all-mpnet-base-v2', device=config['device'])
+        self.model = SentenceTransformer(sbert_mapper[self.domain], device=config['device'])
         self.cat_threshold = 0.4
         self.pol_threshold = 0.3
         self.root_path = path_mapper[self.domain]
