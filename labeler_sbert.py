@@ -118,8 +118,8 @@ class Labeler:
         self.domain = config['domain']
         self.model = SentenceTransformer(sbert_mapper[self.domain], device=config['device'])
         self.marco_model = SentenceTransformer('msmarco-distilbert-base-v4', device=config['device'])
-        self.cat_threshold = 0.4
-        self.pol_threshold = 0.3
+        self.cat_threshold = 0.6
+        self.pol_threshold = 0.4
         self.root_path = path_mapper[self.domain]
         self.categories = aspect_category_mapper[self.domain]
         self.polarities = sentiment_category_mapper[self.domain]
