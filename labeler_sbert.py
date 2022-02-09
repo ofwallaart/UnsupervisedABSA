@@ -3,7 +3,7 @@ import numpy as np
 from sentence_transformers import SentenceTransformer, util
 from config import *
 import re
-import pickle
+from sklearn.metrics import classification_report
 
 
 def load_training_data(file_path):
@@ -15,10 +15,41 @@ def load_training_data(file_path):
     return sentences
 
 
-def get_rep_sentences(self, embeddings, cosine_scores_train, aspect_seed, aspect_category):
+def load_evaluate_data(path):
+    test_sentences = []
+    test_cats = []
+    test_pols = []
+
+    with open(f'{path}/test.txt', 'r', encoding="utf8") as f:
+        for line in f:
+            _, cat, pol, sentence = line.strip().split('\t')
+            cat = int(cat)
+            pol = int(pol)
+            test_cats.append(cat)
+            test_pols.append(pol)
+            test_sentences.append(sentence)
+    return test_sentences, test_cats, test_pols
+
+
+def get_rep_sentences(self, embeddings, cosine_scores_train, aspect_seed, aspect_category, embeddings_marco,
+                      test_embeddings=None):
     train_sentences = self.sentences
     topk_scores = []
     topk = torch.topk(cosine_scores_train, cosine_scores_train.shape[1], dim=1).indices
+
+    # If desired also add individual seed word matches to matchable sentences
+    # topk_scores_indiv = []
+    # seeds_indiv = [item for sublist in list(aspect_seed.values()) for item in sublist]
+    # seeds_len = [len(i) for i in aspect_seed.values()]
+    # seeds_indiv_embeddings = self.marco_model.encode(seeds_indiv, convert_to_tensor=True, show_progress_bar=True)
+    # train_embeddings_shortened = [torch.unsqueeze(embeddings_marco[i], -1) for i, x in enumerate(train_sentences) if
+    #                               len(x.split()) >= 4]
+    # cosine_scores_indiv_train = torch.topk(
+    #     util.cos_sim(seeds_indiv_embeddings, torch.cat(train_embeddings_shortened, -1).T), 1, dim=1)
+    #
+    # for i, argmax_cosine_score in enumerate(torch.split(cosine_scores_indiv_train.indices, seeds_len)):
+    #     topk_scores_indiv.append(
+    #         torch.index_select(torch.cat(train_embeddings_shortened, -1).T, 0, argmax_cosine_score.squeeze(-1)))
 
     for idx, top in enumerate(topk):
 
@@ -62,17 +93,22 @@ def get_rep_sentences(self, embeddings, cosine_scores_train, aspect_seed, aspect
                     break
                 final_top.append(t_item)
 
-        for i in final_top:
-            print(train_sentences[i])
-        print()
-
         sent_embeddings = torch.stack([embeddings[i] for i in final_top])
 
         # Also include the average of top K sentences
+        # topk_embeddings = torch.cat(
+        #     (sent_embeddings, torch.mean(sent_embeddings, dim=0).unsqueeze(0), topk_scores_indiv[idx]))
         topk_embeddings = torch.cat((sent_embeddings, torch.mean(sent_embeddings, dim=0).unsqueeze(0)))
 
-        # Compute cosine-similarities between top representing sentences and all other train data
-        topk_scores.append(torch.max(util.cos_sim(topk_embeddings, embeddings), dim=0)[0].unsqueeze(dim=-1))
+        # Compute cosine-similarities between top representing sentences and all other train/test data
+        if torch.is_tensor(test_embeddings):
+            topk_scores.append(torch.max(util.cos_sim(topk_embeddings, test_embeddings), dim=0)[0].unsqueeze(dim=-1))
+        else:
+            topk_scores.append(torch.max(util.cos_sim(topk_embeddings, embeddings), dim=0)[0].unsqueeze(dim=-1))
+
+            for i in final_top:
+                print(train_sentences[i])
+            print()
 
     return torch.t(torch.cat(topk_scores, 1))
 
@@ -81,6 +117,7 @@ class Labeler:
     def __init__(self):
         self.domain = config['domain']
         self.model = SentenceTransformer(sbert_mapper[self.domain], device=config['device'])
+        self.marco_model = SentenceTransformer('msmarco-distilbert-base-v4', device=config['device'])
         self.cat_threshold = 0.4
         self.pol_threshold = 0.3
         self.root_path = path_mapper[self.domain]
@@ -89,7 +126,7 @@ class Labeler:
         self.labels = None
         self.sentences = None
 
-    def __call__(self, use_two_step=True):
+    def __call__(self, use_two_step=True, evaluate=True):
 
         category_seeds = aspect_seed_mapper[self.domain]
         polarity_seeds = sentiment_seed_mapper[self.domain]
@@ -104,20 +141,24 @@ class Labeler:
             seeds[pol] = " ".join(polarity_seeds[pol])
 
         seed_embeddings = self.model.encode(list(seeds.values()), convert_to_tensor=True, show_progress_bar=True)
+        seed_embeddings_marco = self.marco_model.encode(list(seeds.values()), convert_to_tensor=True,
+                                                        show_progress_bar=True)
 
         # Load and encode the train set
         self.sentences = load_training_data(f'{self.root_path}/train.txt')
         embeddings = self.model.encode(self.sentences, convert_to_tensor=True, show_progress_bar=True)
+        embeddings_marco = self.marco_model.encode(self.sentences, convert_to_tensor=True, show_progress_bar=True)
 
         # Compute cosine-similarities
-        cosine_category_scores, cosine_polarity_scores = torch.split(util.cos_sim(seed_embeddings, embeddings), split)
+        cosine_category_scores, cosine_polarity_scores = torch.split(
+            util.cos_sim(seed_embeddings_marco, embeddings_marco), split)
 
         if use_two_step:
             # Get top most representable sentences for each aspect
             cosine_category_scores = get_rep_sentences(self, embeddings, cosine_category_scores,
-                                                       category_seeds, self.categories)
+                                                       category_seeds, self.categories, embeddings_marco)
             cosine_polarity_scores = get_rep_sentences(self, embeddings, cosine_polarity_scores,
-                                                       polarity_seeds, self.polarities)
+                                                       polarity_seeds, self.polarities, embeddings_marco)
 
         category_argmax = torch.argmax(cosine_category_scores, dim=0).tolist()
         category_max = torch.max(cosine_category_scores, dim=0)[0].tolist()
@@ -150,6 +191,36 @@ class Labeler:
         print('Labeled data statistics:')
         print(cnt)
 
+        if evaluate:
+            test_sentences, test_cats, test_pols = load_evaluate_data(self.root_path)
+            test_embeddings = self.model.encode(test_sentences, convert_to_tensor=True, show_progress_bar=True)
+
+            if use_two_step:
+                cosine_category_test_scores = get_rep_sentences(self, embeddings, cosine_category_scores,
+                                                                category_seeds, self.categories, embeddings_marco,
+                                                                test_embeddings)
+                cosine_polarity_test_scores = get_rep_sentences(self, embeddings, cosine_polarity_scores,
+                                                                polarity_seeds, self.polarities, embeddings_marco,
+                                                                test_embeddings)
+            else:
+                cosine_category_test_scores, cosine_polarity_test_scores = torch.split(
+                    util.cos_sim(seed_embeddings, test_embeddings), split)
+
+            category_test_argmax = torch.argmax(cosine_category_test_scores, dim=0).tolist()
+            polarity_test_argmax = torch.argmax(cosine_polarity_test_scores, dim=0).tolist()
+
+            print("Polarity")
+            print(classification_report(
+                test_pols, polarity_test_argmax, target_names=sentiment_category_mapper[self.domain], digits=4
+            ))
+            print()
+
+            print("Aspect")
+            print(classification_report(
+                test_cats, category_test_argmax, target_names=aspect_category_mapper[self.domain], digits=4
+            ))
+            print()
+
     def update_labels(self, cat_threshold, pol_threshold):
         labels = self.labels
         sentences = self.sentences
@@ -176,6 +247,7 @@ class Labeler:
 
 
 if __name__ == '__main__':
+    torch._set_deterministic(True)
+
     labeler = Labeler()
     labeler()
-

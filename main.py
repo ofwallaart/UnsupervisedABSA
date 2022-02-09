@@ -37,15 +37,15 @@ def load_obj(name ):
 # scoreComputer = ScoreComputer(aspect_vocabularies, sentiment_vocabularies)
 # scoreComputer(sentences, aspects, opinions)
 
-# labeler = Labeler()
-# labeler()
+labeler = Labeler()
+labeler()
 
-trainer = Trainer()
-dataset = trainer.load_training_data()
-trainer.train_model(dataset)
-trainer.save_model('model')
-trainer.load_model('model')
-trainer.evaluate()
+# trainer = Trainer()
+# dataset = trainer.load_training_data()
+# trainer.train_model(dataset)
+# trainer.save_model('model')
+# trainer.load_model('model')
+# trainer.evaluate()
 
 # print('-------')
 # print('Start training model with Sentence Transformers')
