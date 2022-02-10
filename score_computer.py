@@ -18,7 +18,7 @@ class ScoreComputer:
         self.aspect_vocabularies = aspect_vocabularies
         self.sentiment_vocabularies = sentiment_vocabularies
     
-    def __call__(self, sentences, aspects, opinions):
+    def __call__(self, sentences, aspects, opinions, evaluate=False):
         categories = aspect_category_mapper[self.domain]
         polarities = sentiment_category_mapper[self.domain]
         K = K_2
@@ -26,7 +26,9 @@ class ScoreComputer:
         aspect_sets = self.load_vocabulary(self.aspect_vocabularies, M[self.domain])
         polarity_sets = self.load_vocabulary(self.sentiment_vocabularies, M[self.domain])
 
-        f = open(f'{self.root_path}/scores.txt', 'w', encoding='utf8')
+        file = 'scores' if not evaluate else 'scores-test'
+
+        f = open(f'{self.root_path}/{file}.txt', 'w', encoding='utf8')
         
         for sentence, aspect, opinion in tqdm(zip(sentences, aspects, opinions)):
             aspect_words = set()

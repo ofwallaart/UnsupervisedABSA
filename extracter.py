@@ -21,13 +21,15 @@ class Extracter:
         self.topic_model = BERTopic(verbose=True, calculate_probabilities=True)
         self.root_path = path_mapper[self.domain]
 
-    def __call__(self):
+    def __call__(self, evaluate=False):
         # Extract potential-aspects and potential-opinions
         sentences = []
         aspects = []
         opinions = []
 
-        with open(f'{self.root_path}/train.txt', encoding="utf8") as f:
+        file = 'train' if not evaluate else 'test'
+
+        with open(f'{self.root_path}/{file}.txt', encoding="utf8") as f:
             for line in tqdm(f):
                 text = line.strip()
                 sentences.append(text)
