@@ -29,8 +29,19 @@ from score_computer import ScoreComputer
 from trainer import Trainer
 import pickle
 
+def save_obj(obj, name ):
+    with open(r'/dbfs/FileStore/kto/kto/store/' + name + '.pkl', 'wb+') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+# def load_obj(name ):
+#     with open(r'/dbfs/FileStore/kto/kto/store/' + name + '.pkl', 'rb') as f:
+#         return pickle.load(f)
+
 vocabGenerator = VocabGenerator()
 aspect_vocabularies, sentiment_vocabularies = vocabGenerator()
+
+save_obj(aspect_vocabularies, 'aspect_vocabularies')
+save_obj(sentiment_vocabularies, 'sentiment_vocabularies')
 
 extracter = Extracter()
 sentences, aspects, opinions = extracter()
@@ -40,6 +51,14 @@ scoreComputer(sentences, aspects, opinions)
 
 labeler = Labeler()
 labeler()
+
+# COMMAND ----------
+
+sentences, aspects, opinions = extracter(evaluate=True)
+scoreComputer(sentences, aspects, opinions, evaluate=True)
+labeler(evaluate=True)
+
+# COMMAND ----------
 
 trainer = Trainer()
 dataset = trainer.load_training_data()
@@ -67,3 +86,7 @@ cmp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=classes)
 
 fig, ax = plt.subplots(figsize=(15,15))
 cmp.plot(ax=ax, xticks_rotation='vertical')
+
+# COMMAND ----------
+
+

@@ -1,6 +1,8 @@
 from config import *
 import numpy as np
 from sklearn.metrics import classification_report
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
 class Labeler:
 
@@ -22,7 +24,7 @@ class Labeler:
         # Read scores
         file = 'scores' if not evaluate else 'scores-test'
 
-        with open(f'{self.root_path}/{file}.txt', 'r', encoding="utf8") as f:
+        with open(f'{self.root_path}/scores.txt', 'r', encoding="utf8") as f:
             for idx, line in enumerate(f):
                 if idx % 2 == 1:
                     values = line.strip().split()
@@ -80,17 +82,19 @@ class Labeler:
                     if idx % 2 == 1:
                         aspect = []
                         sentiment = []
-                        aspect_high = 0
-                        sentiment_high = 0
+                        aspect_high = -100
+                        sentiment_high = -100
                         key = None
                         for j, val in enumerate(line.strip().split()):
                             if j % 2 == 1:
                                 # Normalise score
                                 dev = (float(val) - means[key]) / sigma[key]
                                 if key in categories and dev > aspect_high:
-                                    aspect.append(key)
-                                elif dev > sentiment_high:
-                                    sentiment.append(key)
+                                    aspect = [key]
+                                    aspect_high = dev
+                                elif key in polarities and dev > sentiment_high:
+                                    sentiment = [key]
+                                    sentiment_high = dev
                             else:
                                 key = val[:-1]
                         # No conflict (avoid multi-class sentences)
@@ -99,7 +103,11 @@ class Labeler:
                             cnt[keyword] = cnt.get(keyword, 0) + 1
                             aspects.append(aspect[0])
                             sentiments.append(sentiment[0])
-
+                            
+            # Labeled data statistics
+            print('Labeled data statistics:')
+            print(cnt)
+            
             test_cats = []
             test_pols = []
 
@@ -122,3 +130,9 @@ class Labeler:
             print("Aspect")
             print(classification_report(actual, predicted, digits=4))
             print()
+            
+            cm = confusion_matrix(actual, predicted, labels=list(categories))
+            cmp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=list(categories))
+
+            fig, ax = plt.subplots(figsize=(15,15))
+            cmp.plot(ax=ax, xticks_rotation='vertical')
