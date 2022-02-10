@@ -5,7 +5,7 @@ config = {
 bert_mapper = {
     'laptop': 'activebus/BERT-DK_laptop',
     'restaurant': 'activebus/BERT-DK_rest',
-    'kto': './datasets/kto/BERT-DK_kto'
+    'kto': '/dbfs/FileStore/kto/kto/BERT-DK_kto'
 }
 
 sbert_mapper = {
@@ -15,9 +15,9 @@ sbert_mapper = {
 }
 
 path_mapper = {
-    'laptop': './datasets/laptop',
-    'restaurant': './datasets/restaurant',
-    'kto': './datasets/kto'
+    'laptop': '/dbfs/FileStore/kto/laptop',
+    'restaurant': '/dbfs/FileStore/kto/restaurant',
+    'kto': '/dbfs/FileStore/kto/kto'
 }
 aspect_category_mapper = {
     'laptop': ['support', 'os', 'display', 'battery', 'company', 'mouse', 'software', 'keyboard'],
@@ -76,12 +76,12 @@ sentiment_seed_mapper = {
 
 weights = {
     'aspect_weights': {
-        'laptop': [100, 100, 100, 100, 100],
+        'laptop': [34, 42, 59, 38, 47, 35, 20, 32],
         'restaurant': [345, 67, 201],
         'kto': [164, 31, 73, 182, 78, 45, 173, 87, 66, 13, 50]
     },
     'sentiment_weights': {
-        'laptop': [100, 100],
+        'laptop': [157, 150],
         'restaurant': [231, 382],
         'kto': [927, 35]
     }
@@ -99,10 +99,10 @@ N = {
     'kto': 1
 }
 
-K_1 = 10
-K_2 = 30
+K_1 = 5
+K_2 = 20
 lambda_threshold = 0.5
-batch_size = 12
-validation_data_size = 50
+batch_size = 32
+validation_data_size = 150
 learning_rate = 1e-5
-epochs = 2
+epochs = 15

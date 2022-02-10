@@ -48,7 +48,7 @@ class Trainer:
         sentences = []
         cats = []
         pols = []
-        with open(f'{self.root_path}/label-sbert.txt', 'r', encoding="utf8") as f:
+        with open(f'{self.root_path}/label.txt', 'r', encoding="utf8") as f:
             for idx, line in enumerate(f):
                 if idx % 2 == 1:
                     cat, pol = line.strip().split()

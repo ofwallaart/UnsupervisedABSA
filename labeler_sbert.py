@@ -38,18 +38,18 @@ def get_rep_sentences(self, embeddings, cosine_scores_train, aspect_seed, aspect
     topk = torch.topk(cosine_scores_train, cosine_scores_train.shape[1], dim=1).indices
 
     # If desired also add individual seed word matches to matchable sentences
-    # topk_scores_indiv = []
-    # seeds_indiv = [item for sublist in list(aspect_seed.values()) for item in sublist]
-    # seeds_len = [len(i) for i in aspect_seed.values()]
-    # seeds_indiv_embeddings = self.marco_model.encode(seeds_indiv, convert_to_tensor=True, show_progress_bar=True)
-    # train_embeddings_shortened = [torch.unsqueeze(embeddings_marco[i], -1) for i, x in enumerate(train_sentences) if
-    #                               len(x.split()) >= 4]
-    # cosine_scores_indiv_train = torch.topk(
-    #     util.cos_sim(seeds_indiv_embeddings, torch.cat(train_embeddings_shortened, -1).T), 1, dim=1)
-    #
-    # for i, argmax_cosine_score in enumerate(torch.split(cosine_scores_indiv_train.indices, seeds_len)):
-    #     topk_scores_indiv.append(
-    #         torch.index_select(torch.cat(train_embeddings_shortened, -1).T, 0, argmax_cosine_score.squeeze(-1)))
+    topk_scores_indiv = []
+    seeds_indiv = [item for sublist in list(aspect_seed.values()) for item in sublist]
+    seeds_len = [len(i) for i in aspect_seed.values()]
+    seeds_indiv_embeddings = self.marco_model.encode(seeds_indiv, convert_to_tensor=True, show_progress_bar=True)
+    train_embeddings_shortened = [torch.unsqueeze(embeddings_marco[i], -1) for i, x in enumerate(train_sentences) if
+                                   len(x.split()) >= 4]
+    cosine_scores_indiv_train = torch.topk(
+        util.cos_sim(seeds_indiv_embeddings, torch.cat(train_embeddings_shortened, -1).T), 1, dim=1)
+    
+    for i, argmax_cosine_score in enumerate(torch.split(cosine_scores_indiv_train.indices, seeds_len)):
+        topk_scores_indiv.append(
+            torch.index_select(torch.cat(train_embeddings_shortened, -1).T, 0, argmax_cosine_score.squeeze(-1)))
 
     for idx, top in enumerate(topk):
 
@@ -96,9 +96,9 @@ def get_rep_sentences(self, embeddings, cosine_scores_train, aspect_seed, aspect
         sent_embeddings = torch.stack([embeddings[i] for i in final_top])
 
         # Also include the average of top K sentences
-        # topk_embeddings = torch.cat(
-        #     (sent_embeddings, torch.mean(sent_embeddings, dim=0).unsqueeze(0), topk_scores_indiv[idx]))
-        topk_embeddings = torch.cat((sent_embeddings, torch.mean(sent_embeddings, dim=0).unsqueeze(0)))
+        topk_embeddings = torch.cat(
+            (sent_embeddings, torch.mean(sent_embeddings, dim=0).unsqueeze(0), topk_scores_indiv[idx]))
+        # topk_embeddings = torch.cat((sent_embeddings, torch.mean(sent_embeddings, dim=0).unsqueeze(0)))
 
         # Compute cosine-similarities between top representing sentences and all other train/test data
         if torch.is_tensor(test_embeddings):
@@ -118,8 +118,8 @@ class Labeler:
         self.domain = config['domain']
         self.model = SentenceTransformer(sbert_mapper[self.domain], device=config['device'])
         self.marco_model = SentenceTransformer('msmarco-distilbert-base-v4', device=config['device'])
-        self.cat_threshold = 0.6
-        self.pol_threshold = 0.4
+        self.cat_threshold = 0.7
+        self.pol_threshold = 0.45
         self.root_path = path_mapper[self.domain]
         self.categories = aspect_category_mapper[self.domain]
         self.polarities = sentiment_category_mapper[self.domain]
