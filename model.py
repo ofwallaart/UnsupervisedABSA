@@ -6,7 +6,7 @@ from config import *
 
 class LQLoss(nn.Module):
     
-    def __init__(self, q, weight, alpha=0.0):
+    def __init__(self, q, weight, alpha=1.0):
         super().__init__()
         self.q = q ## parameter in the paper
         self.alpha = alpha ## hyper-parameter for trade-off between weighted and unweighted GCE Loss

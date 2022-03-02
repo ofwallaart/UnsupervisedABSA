@@ -246,10 +246,10 @@ class Trainer:
 
         df.to_csv(f'{self.root_path}/predictions.csv')
 
-        predicted = np.array(predicted_polarity)
-        actual = np.array(actual_polarity)
+        predicted_pol = np.array(predicted_polarity)
+        actual_pol = np.array(actual_polarity)
         print("Polarity")
-        print(classification_report(actual, predicted, digits=4))
+        print(classification_report(actual_pol, predicted_pol, digits=4))
         print()
 
         predicted = np.array(predicted_aspect)
@@ -257,3 +257,5 @@ class Trainer:
         print("Aspect")
         print(classification_report(actual, predicted, digits=4))
         print()
+        
+        return classification_report(actual_pol, predicted_pol, digits=4, output_dict=True), classification_report(actual, predicted, digits=4, output_dict=True)

@@ -4,16 +4,6 @@
 
 # COMMAND ----------
 
-pip install -r requirements.txt
-
-# COMMAND ----------
-
-# MAGIC %pip install -U tokenizers tqdm
-# MAGIC %pip install -U sentence-transformers
-# MAGIC %pip install -U bertopic
-
-# COMMAND ----------
-
 # MAGIC %sh python -m spacy download nl_core_news_sm
 
 # COMMAND ----------
@@ -26,6 +16,10 @@ from labeler_sbert import Labeler
 
 labeler = Labeler()
 labeler()
+
+# COMMAND ----------
+
+labeler.update_labels(0.3, 0.3)
 
 # COMMAND ----------
 
@@ -43,7 +37,7 @@ trainer.evaluate()
 from pyspark.sql import functions as F
 
 df = spark.read.options(header='True').option("quote", "\"").option("escape", "\"").csv(r'dbfs:/FileStore/kto/restaurant/predictions.csv')
-display(df.where(F.col('predicted category') == 'place'))
+display(df.where(F.col('predicted polarity') == 'positive'))
 
 # COMMAND ----------
 
@@ -57,3 +51,10 @@ cmp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=classes)
 
 fig, ax = plt.subplots(figsize=(15,15))
 cmp.plot(ax=ax, xticks_rotation='vertical')
+
+# COMMAND ----------
+
+path = "dbfs:/FileStore/kto/restaurant/scores-test.txt"
+
+df1 = spark.read.text(path)
+display(df1)

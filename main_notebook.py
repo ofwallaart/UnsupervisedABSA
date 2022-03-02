@@ -4,16 +4,6 @@
 
 # COMMAND ----------
 
-pip install -r requirements.txt
-
-# COMMAND ----------
-
-# MAGIC %pip install -U tokenizers tqdm
-# MAGIC %pip install -U sentence-transformers
-# MAGIC %pip install -U bertopic
-
-# COMMAND ----------
-
 # MAGIC %sh python -m spacy download nl_core_news_sm
 
 # COMMAND ----------
@@ -28,44 +18,91 @@ from extracter import Extracter
 from score_computer import ScoreComputer
 from trainer import Trainer
 import pickle
+import time
+
+date = time.strftime("%Y%m%d_%H%M%S")
 
 def save_obj(obj, name ):
     with open(r'/dbfs/FileStore/kto/kto/store/' + name + '.pkl', 'wb+') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
-# def load_obj(name ):
-#     with open(r'/dbfs/FileStore/kto/kto/store/' + name + '.pkl', 'rb') as f:
-#         return pickle.load(f)
+def load_obj(name ):
+    with open(r'/dbfs/FileStore/kto/kto/store/' + name + '.pkl', 'rb') as f:
+        return pickle.load(f)
 
-vocabGenerator = VocabGenerator()
-aspect_vocabularies, sentiment_vocabularies = vocabGenerator()
+def CASCrun():
+  vocabGenerator = VocabGenerator()
+  aspect_vocabularies, sentiment_vocabularies = vocabGenerator()
 
-save_obj(aspect_vocabularies, 'aspect_vocabularies')
-save_obj(sentiment_vocabularies, 'sentiment_vocabularies')
+  # save_obj(aspect_vocabularies, 'aspect_vocabularies')
+  # save_obj(sentiment_vocabularies, 'sentiment_vocabularies')
 
-extracter = Extracter()
-sentences, aspects, opinions = extracter()
+  # aspect_vocabularies = load_obj('aspect_vocabularies')
+  # sentiment_vocabularies = load_obj('sentiment_vocabularies')
 
-scoreComputer = ScoreComputer(aspect_vocabularies, sentiment_vocabularies)
-scoreComputer(sentences, aspects, opinions)
+  extracter = Extracter()
+  sentences, aspects, opinions = extracter()
 
-labeler = Labeler()
-labeler()
+  scoreComputer = ScoreComputer(aspect_vocabularies, sentiment_vocabularies)
+  scoreComputer(sentences, aspects, opinions)
 
-# COMMAND ----------
+  labeler = Labeler()
+  labeler()
 
-sentences, aspects, opinions = extracter(evaluate=True)
-scoreComputer(sentences, aspects, opinions, evaluate=True)
-labeler(evaluate=True)
+  trainer = Trainer()
+  dataset = trainer.load_training_data()
+  trainer.train_model(dataset)
+  trainer.save_model(f'model_single_{date}')
+  trainer.load_model(f'model_single_{date}')
+  return trainer.evaluate()
+
+CASCrun()
 
 # COMMAND ----------
 
 trainer = Trainer()
 dataset = trainer.load_training_data()
 trainer.train_model(dataset)
-trainer.save_model('model')
-trainer.load_model('model')
 trainer.evaluate()
+
+# COMMAND ----------
+
+# sentences, aspects, opinions = extracter(evaluate=True)
+# scoreComputer(sentences, aspects, opinions, evaluate=True)
+# labeler(evaluate=True)
+
+# COMMAND ----------
+
+RUNS = 5
+polarity_list, aspect_list = [], []
+for i in range(RUNS):
+    print('RUN: ', i)
+    polarity, aspect = CASCrun()
+    polarity_list.append(polarity)
+    aspect_list.append(aspect)
+    
+acc, prec, rec, f1 = 0, 0, 0, 0
+for item in polarity_list:
+    acc += item['accuracy']
+    prec += item['macro avg']['precision']
+    rec += item['macro avg']['recall']
+    f1 += item['macro avg']['f1-score']
+
+print(f"accuracy: {acc/len(polarity_list)},\t precision: {prec/len(polarity_list)},\t recall: {rec/len(polarity_list)},\t f1-score: {f1/len(polarity_list)}")
+
+acc, prec, rec, f1 = 0, 0, 0, 0
+for item in aspect_list:
+    acc += item['accuracy']
+    prec += item['macro avg']['precision']
+    rec += item['macro avg']['recall']
+    f1 += item['macro avg']['f1-score']
+
+print(
+    f"accuracy: {acc / len(aspect_list)},\t precision: {prec / len(aspect_list)},\t recall: {rec / len(aspect_list)},\t f1-score: {f1 / len(aspect_list)}")
+
+# COMMAND ----------
+
+polarity_list
 
 # COMMAND ----------
 
