@@ -5,7 +5,7 @@ config = {
 bert_mapper = {
     'laptop': 'activebus/BERT-DK_laptop',
     'restaurant': 'activebus/BERT-DK_rest',
-    'kto': '/dbfs/FileStore/kto/pt_runs/pt_bertselect-Bert' #'/dbfs/FileStore/kto/kto/BERT-DK_kto'
+    'kto': '/dbfs/FileStore/kto/kto/BERT-DK_kto'
 }
 path_mapper = {
     'laptop': '/dbfs/FileStore/kto/laptop',

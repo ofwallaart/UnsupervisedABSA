@@ -4,16 +4,6 @@
 
 # COMMAND ----------
 
-pip install -r requirements.txt
-
-# COMMAND ----------
-
-# MAGIC %pip install -U tokenizers tqdm
-# MAGIC %pip install -U sentence-transformers
-# MAGIC %pip install -U bertopic
-
-# COMMAND ----------
-
 # MAGIC %sh python -m spacy download nl_core_news_sm
 
 # COMMAND ----------
@@ -24,6 +14,9 @@ from score_computer import ScoreComputer
 from labeler import Labeler
 from trainer import Trainer
 import pickle
+import time
+
+date = time.strftime("%Y%m%d_%H%M%S")
 
 def save_obj(obj, name ):
     with open(r'/dbfs/FileStore/kto/kto/store/' + name + '.pkl', 'wb+') as f:
@@ -33,11 +26,11 @@ def load_obj(name ):
     with open(r'/dbfs/FileStore/kto/kto/store/' + name + '.pkl', 'rb') as f:
         return pickle.load(f)
 
-# vocabGenerator = VocabGenerator()
-# aspect_vocabularies, sentiment_vocabularies = vocabGenerator()
+vocabGenerator = VocabGenerator()
+aspect_vocabularies, sentiment_vocabularies = vocabGenerator()
 
-# extracter = Extracter()
-# sentences, aspects, opinions = extracter()
+extracter = Extracter()
+sentences, aspects, opinions = extracter()
 
 # save_obj(aspect_vocabularies, 'aspect_vocabularies')
 # save_obj(sentiment_vocabularies, 'sentiment_vocabularies')
@@ -51,17 +44,17 @@ def load_obj(name ):
 # aspects = load_obj('aspects')
 # opinions = load_obj('opinions')
 
-# scoreComputer = ScoreComputer(aspect_vocabularies, sentiment_vocabularies)
-# scoreComputer(sentences, aspects, opinions)
+scoreComputer = ScoreComputer(aspect_vocabularies, sentiment_vocabularies)
+scoreComputer(sentences, aspects, opinions)
 
-# labeler = Labeler()
-# labeler()
+labeler = Labeler()
+labeler()
 
 trainer = Trainer()
 dataset = trainer.load_training_data()
 trainer.train_model(dataset)
-trainer.save_model('model')
-trainer.load_model('model')
+trainer.save_model(f'model_single_{date}')
+trainer.load_model(f'model_single_{date}')
 trainer.evaluate()
 
 # COMMAND ----------
