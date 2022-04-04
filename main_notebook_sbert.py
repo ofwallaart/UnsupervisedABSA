@@ -54,7 +54,7 @@ cmp.plot(ax=ax, xticks_rotation='vertical')
 
 # COMMAND ----------
 
-path = "dbfs:/FileStore/kto/restaurant/scores-test.txt"
+path = "dbfs:/FileStore/kto/restaurant-nl/label-sentences.txt"
 
 df1 = spark.read.text(path)
 display(df1)

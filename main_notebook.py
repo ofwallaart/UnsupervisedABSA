@@ -23,22 +23,22 @@ import time
 date = time.strftime("%Y%m%d_%H%M%S")
 
 def save_obj(obj, name ):
-    with open(r'/dbfs/FileStore/kto/kto/store/' + name + '.pkl', 'wb+') as f:
+    with open(r'/dbfs/FileStore/kto/restaurant-nl/store/' + name + '.pkl', 'wb+') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
 def load_obj(name ):
-    with open(r'/dbfs/FileStore/kto/kto/store/' + name + '.pkl', 'rb') as f:
+    with open(r'/dbfs/FileStore/kto/restaurant-nl/store/' + name + '.pkl', 'rb') as f:
         return pickle.load(f)
 
 def CASCrun():
-  vocabGenerator = VocabGenerator()
-  aspect_vocabularies, sentiment_vocabularies = vocabGenerator()
+#   vocabGenerator = VocabGenerator()
+#   aspect_vocabularies, sentiment_vocabularies = vocabGenerator()
 
-  # save_obj(aspect_vocabularies, 'aspect_vocabularies')
-  # save_obj(sentiment_vocabularies, 'sentiment_vocabularies')
+#   save_obj(aspect_vocabularies, 'aspect_vocabularies')
+#   save_obj(sentiment_vocabularies, 'sentiment_vocabularies')
 
-  # aspect_vocabularies = load_obj('aspect_vocabularies')
-  # sentiment_vocabularies = load_obj('sentiment_vocabularies')
+  aspect_vocabularies = load_obj('aspect_vocabularies')
+  sentiment_vocabularies = load_obj('sentiment_vocabularies')
 
   extracter = Extracter()
   sentences, aspects, opinions = extracter()
@@ -102,13 +102,16 @@ print(
 
 # COMMAND ----------
 
-polarity_list
+from trainer import Trainer
+trainer = Trainer()
+trainer.load_model(f'model_single_20220302_172437')
+trainer.evaluate()
 
 # COMMAND ----------
 
 from pyspark.sql import functions as F
 
-df = spark.read.options(header='True').option("quote", "\"").option("escape", "\"").csv(r'dbfs:/FileStore/kto/restaurant/predictions.csv')
+df = spark.read.options(header='True').option("quote", "\"").option("escape", "\"").csv(r'dbfs:/FileStore/kto/kto/predictions.csv')
 display(df.where(F.col('predicted category') == 'place'))
 
 # COMMAND ----------

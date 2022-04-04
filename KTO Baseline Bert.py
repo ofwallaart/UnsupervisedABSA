@@ -33,7 +33,7 @@ class BertClassifier(nn.Module):
         D_in, H = 768, 50
 
         # Instantiate BERT model
-        self.bert = BertModel.from_pretrained('bert-base-uncased')
+        self.bert = BertModel.from_pretrained('GroNLP/bert-base-dutch-cased')
 
         # Instantiate an one-layer feed-forward classifier
         self.classifier = nn.Sequential(
@@ -74,7 +74,7 @@ class BertBaseline:
     def __init__(self):
         self.domain = config['domain']
         self.root_path = path_mapper[self.domain]
-        self.bert_type = 'bert-base-uncased'
+        self.bert_type = 'GroNLP/bert-base-dutch-cased'
         self.categories = aspect_category_mapper[self.domain]
         self.polarities = sentiment_category_mapper[self.domain]
         self.device = config['device']
@@ -345,7 +345,7 @@ class BertBaseline:
 
 # COMMAND ----------
 
-RUNS = 5
+RUNS = 2
 polarity_list, aspect_list = [], []
 
 for i in range(RUNS):
